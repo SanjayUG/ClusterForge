@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\clusterforge.dir/objects.a
+C:\MinGW\bin\ar.exe qc CMakeFiles\clusterforge.dir/objects.a @CMakeFiles\clusterforge.dir\objects1.rsp
+C:\MinGW\bin\c++.exe  -Wall -Wextra -O2 -Wl,--whole-archive CMakeFiles\clusterforge.dir/objects.a -Wl,--no-whole-archive -o clusterforge.exe -Wl,--out-implib,libclusterforge.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\clusterforge.dir\linkLibs.rsp

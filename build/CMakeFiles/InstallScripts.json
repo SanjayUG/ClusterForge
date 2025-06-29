@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"A:/PROJECT/ClusterForge/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
