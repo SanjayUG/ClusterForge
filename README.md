@@ -249,13 +249,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **MPI Forum** for distributed computing standards
 - **Research Community** for inspiration and feedback
 
-## 📞 Support
 
-- **Documentation**: [Wiki](https://github.com/your-username/ClusterForge/wiki)
-- **Issues**: [GitHub Issues](https://github.com/your-username/ClusterForge/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/ClusterForge/discussions)
-- **Email**: clusterforge@example.com
-
----
 
 **ClusterForge** - Shaping the future of cluster resource management through intelligent, explainable, and predictive systems. 🚀 

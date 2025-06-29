@@ -264,7 +264,7 @@ int main(int argc, char* argv[]) {
 #endif
         // Main process
         printBanner();
-        printDependencyStatus();
+        // printDependencyStatus(); // Commented out to focus on core features
         
         // Initialize logging
         initializeLogging();
@@ -288,11 +288,13 @@ int main(int argc, char* argv[]) {
         // Initialize cluster
         initializeCluster(cluster);
         
-        // Demonstrate features
+        // Demonstrate core features
         demonstrateBasicFeatures(cluster);
-        demonstrateDRLScheduler(cluster);
-        demonstratePredictiveFailover(cluster);
-        demonstrateDAGScheduler(cluster);
+        
+        // Comment out advanced features for now
+        // demonstrateDRLScheduler(cluster);
+        // demonstratePredictiveFailover(cluster);
+        // demonstrateDAGScheduler(cluster);
         
         // Run full simulation
         runSimulation(cluster);
