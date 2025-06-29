@@ -1,0 +1,16 @@
+**ClusterForge** is a C++-based Cluster Resource Manager that manages computing resources (CPU, memory, I/O) across a cluster of servers with a focus on:
+
+**What We Are Building**:
+- A system for efficient task allocation, load balancing, node health monitoring, failover, and performance logging in a simulated multi-node environment.
+- Key components include a scheduler, resource manager, health monitor, failover handler, and logger, implemented with C++ using libraries like MPI and Boost.
+
+**Unique Features**:
+1. **Explainable DRL Scheduling with Meta-Learning**: A reinforcement learning scheduler that adapts to new clusters via meta-learning and logs human-readable explanations for task assignments, unlike opaque DRL systems (e.g., SLURM, YARN).
+2. **Predictive Failover with Proactive Task Migration**: Uses anomaly detection (e.g., LSTM) to predict node failures and proactively migrate tasks, unlike reactive failover in existing systems.
+3. **Dynamic Memory-Aware DAG Scheduling**: Optimizes task dependencies using a dynamic Directed Acyclic Graph, prioritizing both CPU and memory constraints, addressing a gap in memory-focused scheduling.
+
+These features make ClusterForge innovative by combining adaptability, transparency, and memory-aware optimization, which are underexplored in current research and systems.
+
+
+**Algorithm**
+ClusterForge introduces a unique algorithm by combining and enhancing existing algorithms—Deep Q-Network (DQN) with meta-learning, Long Short-Term Memory (LSTM), modified Heterogeneous Earliest Finish Time (HEFT), and Isolation Forest—in a novel way tailored for cluster resource management.
