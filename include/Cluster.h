@@ -6,6 +6,11 @@
 #include <functional>
 #include <atomic>
 #include <string>
+#include <thread>
+#include <mutex>
+#ifndef NO_BOOST
+#include <boost/thread.hpp>
+#endif
 
 namespace ClusterForge {
 
@@ -68,6 +73,11 @@ private:
     std::function<void(const ClusterMetrics&)> metrics_update_callback_;
     std::function<void(int, const std::string&)> event_callback_;
 
+#ifndef NO_BOOST
+    std::vector<boost::thread> task_threads_;
+    boost::mutex task_mutex_;
+#endif
+    
 public:
     explicit Cluster(const ClusterConfig& config);
     ~Cluster();
@@ -149,6 +159,7 @@ private:
     void notifyEvent(int event_type, const std::string& message);
     void updateNodeMap();
     void validateClusterState();
+    void executeTask(std::shared_ptr<Task> task);
 };
 
 } // namespace ClusterForge 

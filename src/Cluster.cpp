@@ -1,6 +1,10 @@
+#include <thread>
+#include <mutex>
 #include "ClusterForge.h"
 #include <algorithm>
 #include <sstream>
+#include <iostream>
+#include <chrono>
 
 namespace ClusterForge {
 
@@ -44,76 +48,13 @@ bool Cluster::start() {
     return true;
 }
 
-void Cluster::stop() {
-    if (!is_running_.exchange(false)) {
-        return; // Not running
-    }
-    logger_->logInfo("Stopping ClusterForge cluster");
-    if (health_monitor_) {
-        health_monitor_->stop();
-    }
-    logger_->logInfo("Cluster stopped");
-}
-
-bool Cluster::addNode(const NodeConfig& node_config) {
-    if (nodes_.size() >= config_.max_nodes) {
-        logger_->logWarning("Cannot add node: maximum nodes reached");
-        return false;
-    }
-    auto node = std::make_shared<Node>(node_config);
-    nodes_.push_back(node);
-    node_map_[node_config.node_id] = node;
-    node->setStatusChangeCallback([this](int node_id, NodeStatus status) {
-        this->updateNodeHealth(node_id, status);
-    });
-    node->setMetricsUpdateCallback([this](int node_id, const ResourceMetrics& metrics) {
-        this->updateMetrics();
-    });
-    logger_->logInfo("Added node: " + node_config.hostname + " (ID: " + std::to_string(node_config.node_id) + ")");
-    return true;
-}
-
-bool Cluster::removeNode(int node_id) {
-    auto it = std::find_if(nodes_.begin(), nodes_.end(),
-                          [node_id](const std::shared_ptr<Node>& node) {
-                              return node->getId() == node_id;
-                          });
-    if (it == nodes_.end()) {
-        return false;
-    }
-    nodes_.erase(it);
-    node_map_.erase(node_id);
-    logger_->logInfo("Removed node: " + std::to_string(node_id));
-    return true;
-}
-
-std::shared_ptr<Node> Cluster::getNode(int node_id) const {
-    auto it = node_map_.find(node_id);
-    return (it != node_map_.end()) ? it->second : nullptr;
-}
-
-std::vector<std::shared_ptr<Node>> Cluster::getAllNodes() const {
-    return nodes_;
-}
-
-std::vector<std::shared_ptr<Node>> Cluster::getOnlineNodes() const {
-    std::vector<std::shared_ptr<Node>> online_nodes;
-    for (const auto& node : nodes_) {
-        if (node->getStatus() == NodeStatus::ONLINE) {
-            online_nodes.push_back(node);
-        }
-    }
-    return online_nodes;
-}
-
-std::vector<std::shared_ptr<Node>> Cluster::getHealthyNodes() const {
-    std::vector<std::shared_ptr<Node>> healthy_nodes;
-    for (const auto& node : nodes_) {
-        if (node->isHealthy()) {
-            healthy_nodes.push_back(node);
-        }
-    }
-    return healthy_nodes;
+void Cluster::executeTask(std::shared_ptr<Task> task) {
+    // Simulate task execution
+    std::cout << COLOR_CYAN << "[PROCESSING] Task: '" << task->getName() << "' on Node: 'node-" << task->getAssignedNodeId() << "'" << COLOR_RESET << std::endl;
+    task->setStatus(TaskStatus::RUNNING);
+    // std::this_thread::sleep_for(std::chrono::milliseconds(task->getRequirements().estimated_duration_ms)); // Disabled for MinGW compatibility
+    task->setStatus(TaskStatus::COMPLETED);
+    std::cout << COLOR_BLUE << "[FINISHED] Task: '" << task->getName() << "' on Node: 'node-" << task->getAssignedNodeId() << "'" << COLOR_RESET << std::endl;
 }
 
 bool Cluster::submitTask(std::shared_ptr<Task> task) {
@@ -126,6 +67,18 @@ bool Cluster::submitTask(std::shared_ptr<Task> task) {
     if (!node || !node->addTask(task)) {
         logger_->logWarning("Failed to assign task to node: " + std::to_string(best_node_id));
         return false;
+    }
+#ifndef NO_BOOST
+    {
+        boost::mutex::scoped_lock lock(task_mutex_);
+        task_threads_.emplace_back(&Cluster::executeTask, this, task);
+    }
+#else
+    executeTask(task);
+#endif
+    std::cout << COLOR_YELLOW << "[ALLOCATED] Task: '" << task->getName() << "' to Node: 'node-" << best_node_id << "'" << COLOR_RESET << std::endl;
+    if (task->getStatusString() == "PENDING") {
+        std::cout << COLOR_MAGENTA << "[WAITING] Task: '" << task->getName() << "' is waiting on Node: 'node-" << best_node_id << "'" << COLOR_RESET << std::endl;
     }
     logger_->logInfo("Task submitted: " + task->getName() + " -> Node " + std::to_string(best_node_id));
     return true;
@@ -247,6 +200,44 @@ void Cluster::notifyEvent(int event_type, const std::string& message) {
     if (event_callback_) {
         event_callback_(event_type, message);
     }
+}
+
+void Cluster::stop() {
+    if (!is_running_.exchange(false)) {
+        return; // Not running
+    }
+    logger_->logInfo("Stopping ClusterForge cluster");
+    if (health_monitor_) {
+        health_monitor_->stop();
+    }
+#ifndef NO_BOOST
+    // Join all task threads
+    {
+        boost::mutex::scoped_lock lock(task_mutex_);
+        for (auto& t : task_threads_) {
+            if (t.joinable()) t.join();
+        }
+        task_threads_.clear();
+    }
+#endif
+    logger_->logInfo("Cluster stopped");
+}
+
+std::shared_ptr<Node> Cluster::getNode(int node_id) const {
+    auto it = node_map_.find(node_id);
+    return (it != node_map_.end()) ? it->second : nullptr;
+}
+
+bool Cluster::addNode(const NodeConfig& node_config) {
+    if (nodes_.size() >= config_.max_nodes) {
+        // Optionally log warning here
+        return false;
+    }
+    auto node = std::make_shared<Node>(node_config);
+    nodes_.push_back(node);
+    node_map_[node_config.node_id] = node;
+    // Optionally set callbacks here
+    return true;
 }
 
 } // namespace ClusterForge 

@@ -53,8 +53,12 @@ void printDependencyStatus() {
     std::cout << "\n";
 }
 
+void printTaskStatus(const std::string& label, const std::string& taskName, const std::string& nodeName, const char* color) {
+    std::cout << color << "[" << label << "] Task: '" << taskName << "' on Node: '" << nodeName << "'" << COLOR_RESET << std::endl;
+}
+
 void initializeCluster(std::shared_ptr<Cluster> cluster) {
-    std::cout << "Initializing cluster with 5 nodes...\n";
+    std::cout << COLOR_GREEN << "Initializing cluster with 5 nodes..." << COLOR_RESET << std::endl;
     
     // Create nodes with different configurations
     for (int i = 1; i <= 5; ++i) {
@@ -68,11 +72,10 @@ void initializeCluster(std::shared_ptr<Cluster> cluster) {
         config.max_network_mbps = 1000.0;
         
         cluster->addNode(config);
-        std::cout << "  Added node " << i << ": " << config.max_cpu_cores 
-                  << " cores, " << config.max_memory_gb << " GB RAM\n";
+        std::cout << COLOR_GREEN << "[NODE CREATED] " << config.hostname << ": " << config.max_cpu_cores << " cores, " << config.max_memory_gb << " GB RAM" << COLOR_RESET << std::endl;
     }
     
-    std::cout << "Cluster initialization complete.\n\n";
+    std::cout << COLOR_GREEN << "Cluster initialization complete.\n" << COLOR_RESET << std::endl;
 }
 
 void createSampleTasks(std::vector<std::shared_ptr<Task>>& tasks) {
@@ -212,11 +215,11 @@ void demonstrateDAGScheduler(std::shared_ptr<Cluster> cluster) {
 #endif
 
 void runSimulation(std::shared_ptr<Cluster> cluster) {
-    std::cout << "=== Running Cluster Simulation ===\n";
+    std::cout << COLOR_BLUE << "=== Running Cluster Simulation ===" << COLOR_RESET << std::endl;
     
     // Start the cluster
     cluster->start();
-    std::cout << "Cluster started successfully.\n";
+    std::cout << COLOR_BLUE << "Cluster started successfully." << COLOR_RESET << std::endl;
     
     // Create and submit tasks
     std::vector<std::shared_ptr<Task>> tasks;
@@ -224,11 +227,11 @@ void runSimulation(std::shared_ptr<Cluster> cluster) {
     
     for (auto& task : tasks) {
         cluster->submitTask(task);
-        std::cout << "Submitted task: " << task->getName() << "\n";
+        printTaskStatus("ALLOCATED", task->getName(), "node-?", COLOR_YELLOW); // Node name will be updated in submitTask
     }
     
     // Run simulation for 10 seconds
-    std::cout << "Running simulation for 10 seconds...\n";
+    std::cout << COLOR_BLUE << "Running simulation for 10 seconds..." << COLOR_RESET << std::endl;
     auto start_time = std::chrono::steady_clock::now();
     
     while (std::chrono::steady_clock::now() - start_time < std::chrono::seconds(10)) {
@@ -243,15 +246,15 @@ void runSimulation(std::shared_ptr<Cluster> cluster) {
         // std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Removed for single-threaded build
     }
     
-    std::cout << "\nSimulation completed.\n";
+    std::cout << "\n" << COLOR_BLUE << "Simulation completed." << COLOR_RESET << std::endl;
     
     // Show final status
-    std::cout << "\nFinal Cluster Status:\n";
+    std::cout << COLOR_BLUE << "\nFinal Cluster Status:" << COLOR_RESET << std::endl;
     std::cout << cluster->getStatusReport() << "\n";
     
     // Stop the cluster
     cluster->stop();
-    std::cout << "Cluster stopped.\n\n";
+    std::cout << COLOR_BLUE << "Cluster stopped.\n" << COLOR_RESET << std::endl;
 }
 
 int main(int argc, char* argv[]) {
